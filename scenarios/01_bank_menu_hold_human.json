@@ -1,0 +1,15 @@
+{"description": "Menu, transfer, repeating hold loop with an ad, then an agent picks up.",
+ "segments": [
+  {"t": 0,   "label": "hold",     "text": "Thank you for calling First Example Bank. This call may be monitored or recorded for quality assurance."},
+  {"t": 6,   "label": "ivr_menu", "text": "Please listen carefully as our menu options have changed. For account balances, press 1. For billing questions, press 2. To speak with a representative, press 0."},
+  {"t": 18,  "label": "hold",     "text": ""},
+  {"t": 20,  "label": "hold",     "text": "Please hold while we transfer your call to the next available representative."},
+  {"t": 26,  "label": "hold",     "text": ""},
+  {"t": 40,  "label": "hold",     "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 55,  "label": "hold",     "text": ""},
+  {"t": 70,  "label": "hold",     "text": "Did you know you can check your balance anytime in the First Example mobile app? Download it today from your app store."},
+  {"t": 85,  "label": "hold",     "text": ""},
+  {"t": 100, "label": "hold",     "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 115, "label": "hold",     "text": "Did you know you can check your balance anytime in the First Example mobile app? Download it today from your app store."},
+  {"t": 130, "label": "human",    "text": "Thank you for calling First Example Bank, this is Dana. Can I get your full name please?"}
+ ]}

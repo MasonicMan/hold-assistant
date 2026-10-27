@@ -1,0 +1,56 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Classifier harness (Python)
+        working-directory: python
+        run: |
+          pip install -r requirements.txt
+          python -m pytest -q
+          python run_harness.py
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Core tests (Kotlin)
+        working-directory: android
+        run: ./gradlew :core:test
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew :app:assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hold-assistant-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Publish as the "latest" release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk hold-assistant.apk
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest hold-assistant.apk --prerelease \
+            --title "Latest build (#${{ github.run_number }})" \
+            --notes "Built from ${{ github.sha }}. Download hold-assistant.apk on your phone to install or update."

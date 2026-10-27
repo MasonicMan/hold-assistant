@@ -1,0 +1,9 @@
+{"description": "Probe on: an IVR echoes the keyword back twice; must not count as a human.",
+ "probe": true, "expect_probe": "rejected_echo",
+ "segments": [
+  {"t": 0,  "label": "ivr_menu", "text": "Please say or enter your account number."},
+  {"t": 8,  "label": "hold",     "text": ""},
+  {"t": 20, "label": "hold",     "text": "Thanks. Checking that for you."},
+  {"t": 25, "label": "ivr_menu", "text": "You said {keyword}. Is that correct?"},
+  {"t": 30, "label": "ivr_menu", "text": "I heard {keyword}. Is that right?"}
+ ]}

@@ -1,0 +1,9 @@
+{"description": "An ad with no hold cues: false alarm the first time unless the LLM places it; repeat match catches it after.",
+ "segments": [
+  {"t": 0,   "label": "hold",  "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 15,  "label": "hold",  "text": "Example Wireless now offers unlimited 5G plans starting at thirty five dollars a month. Ask your representative for details."},
+  {"t": 30,  "label": "hold",  "text": ""},
+  {"t": 60,  "label": "hold",  "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 75,  "label": "hold",  "text": "Example Wireless now offers unlimited 5G plans starting at thirty five dollars a month. Ask your representative for details."},
+  {"t": 90,  "label": "human", "text": "Hi there, my name is Leo, I can help you with your plan."}
+ ]}

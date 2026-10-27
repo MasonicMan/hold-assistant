@@ -1,0 +1,8 @@
+{"description": "Agent speaks with no phrase cues; needs the LLM (or unsure-as-alert).",
+ "segments": [
+  {"t": 0,  "label": "ivr_menu", "text": "For billing, press 1. For technical support, press 2."},
+  {"t": 10, "label": "hold",     "text": ""},
+  {"t": 20, "label": "hold",     "text": "Your call is important to us. Please continue to hold."},
+  {"t": 40, "label": "hold",     "text": "Your call is important to us. Please continue to hold."},
+  {"t": 60, "label": "human",    "text": "Yeah, uh, I'm looking at the order now and it shows it shipped on the fourth."}
+ ]}

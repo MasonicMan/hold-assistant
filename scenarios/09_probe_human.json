@@ -1,0 +1,7 @@
+{"description": "Probe on: unsure speech persists, prompt fires, person says the keyword.",
+ "probe": true, "expect_probe": "confirmed_human",
+ "segments": [
+  {"t": 0,  "label": "hold",  "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 15, "label": "human", "text": "Yeah I'm looking at that now."},
+  {"t": 21, "label": "human", "text": "Oh, okay, {keyword}."}
+ ]}

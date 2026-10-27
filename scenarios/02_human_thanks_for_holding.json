@@ -1,0 +1,7 @@
+{"description": "Agent opens with 'thank you for holding', a hold phrase; human cues must win.",
+ "segments": [
+  {"t": 0,  "label": "hold",  "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 15, "label": "hold",  "text": ""},
+  {"t": 30, "label": "hold",  "text": "Your call is important to us. Please stay on the line and your call will be answered in the order it was received."},
+  {"t": 44, "label": "human", "text": "Thank you for holding, my name is Marcus. How can I help you today?"}
+ ]}

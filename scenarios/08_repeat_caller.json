@@ -1,0 +1,7 @@
+{"description": "Second call to the same number: known fingerprint places the ad, novel text is a human, no LLM calls.",
+ "known_fingerprint": {"hold": ["Your call is important to us. Please stay on the line and your call will be answered in the order it was received.", "Example Wireless now offers unlimited 5G plans starting at thirty five dollars a month. Ask your representative for details."], "ivr_menu": []},
+ "segments": [
+  {"t": 0,  "label": "hold",  "text": "Example Wireless now offers unlimited 5G plans starting at thirty five dollars a month. Ask your representative for details."},
+  {"t": 15, "label": "hold",  "text": "Please continue to hold."},
+  {"t": 30, "label": "human", "text": "Alright, I have your account open, what's going on with the bill?"}
+ ]}

@@ -1,0 +1,8 @@
+{"description": "High-volume notice with a callback offer, then a human checking if anyone is there.",
+ "segments": [
+  {"t": 0,  "label": "hold",     "text": "We are currently experiencing higher than normal call volume."},
+  {"t": 5,  "label": "ivr_menu", "text": "To receive a callback when an agent is available instead of waiting on hold, press 1. To continue holding, press 2."},
+  {"t": 14, "label": "hold",     "text": ""},
+  {"t": 30, "label": "hold",     "text": "Thank you for your patience. Your estimated wait time is now 4 minutes."},
+  {"t": 50, "label": "human",    "text": "Hello? Are you there?"}
+ ]}

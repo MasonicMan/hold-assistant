@@ -1,0 +1,10 @@
+{"description": "Speech-driven IVR with a reprompt and echo-back, then hold, then a technician.",
+ "segments": [
+  {"t": 0,  "label": "ivr_menu", "text": "Welcome to Example Wireless. In a few words, tell me what you're calling about. You can say things like pay my bill or technical support."},
+  {"t": 9,  "label": "ivr_menu", "text": "Sorry, I didn't get that. You can say pay my bill, technical support, or something else."},
+  {"t": 16, "label": "ivr_menu", "text": "Okay, technical support. Is that right?"},
+  {"t": 20, "label": "hold",     "text": "Got it. One moment while I connect you."},
+  {"t": 24, "label": "hold",     "text": ""},
+  {"t": 40, "label": "hold",     "text": "All of our technicians are currently helping other customers. Your estimated wait time is 6 minutes."},
+  {"t": 60, "label": "human",    "text": "Hi, you've got Priya in tech support, who am I speaking with?"}
+ ]}

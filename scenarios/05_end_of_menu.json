@@ -1,0 +1,5 @@
+{"description": "Menu times out; 'end of menu' must alert before the disconnect.",
+ "segments": [
+  {"t": 0, "label": "ivr_menu", "text": "For new orders, press 1. For order status, press 2."},
+  {"t": 8, "label": "ivr_menu", "text": "You have reached the end of this menu. Goodbye."}
+ ]}
