@@ -16,7 +16,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -30,28 +30,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import app.holdassistant.HoldApp
+import app.holdassistant.core.PhoneNumbers
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
     val s = HoldApp.instance.settings
-    var tokenUrl by remember { mutableStateOf(s.tokenUrl) }
-    var secret by remember { mutableStateOf(s.appSecret) }
-    var deepgram by remember { mutableStateOf(s.deepgramKey) }
-    var anthropic by remember { mutableStateOf(s.anthropicKey) }
     var probe by remember { mutableStateOf(s.probeByDefault) }
     var autoReturn by remember { mutableStateOf(s.autoReturnToHold) }
     var replay by remember { mutableFloatStateOf(s.replaySeconds.toFloat()) }
 
     fun save() {
-        s.tokenUrl = tokenUrl
-        s.appSecret = secret
-        s.deepgramKey = deepgram
-        s.anthropicKey = anthropic
         s.probeByDefault = probe
         s.autoReturnToHold = autoReturn
         s.replaySeconds = replay.roundToInt()
@@ -62,7 +54,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
+                navigationIcon = { IconButton(onClick = { save() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
             )
         },
     ) { padding ->
@@ -70,22 +62,20 @@ fun SettingsScreen(onBack: () -> Unit) {
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("Calling (required)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            Text("Accounts and keys", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
             Text(
-                "Calls run through two small Twilio Functions you deploy once. The setup guide (docs/SETUP.md) walks through it.",
-                style = MaterialTheme.typography.bodySmall,
+                listOf(
+                    if (s.twilioReady) "Calling: ready, caller ID ${PhoneNumbers.pretty(s.callerId)}" else "Calling: not set up",
+                    when {
+                        s.deepgramKey.isNotEmpty() -> "Transcription: Deepgram"
+                        s.onDeviceTranscription -> "Transcription: on-device (free)"
+                        else -> "Transcription: needs a Deepgram key"
+                    },
+                    if (s.anthropicKey.isNotEmpty()) "AI: Claude Haiku" else "AI: off (rules only)",
+                ).joinToString("\n"),
+                style = MaterialTheme.typography.bodyMedium,
             )
-            OutlinedTextField(tokenUrl, { tokenUrl = it }, label = { Text("Token URL") }, placeholder = { Text("https://….twil.io/token") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(secret, { secret = it }, label = { Text("App secret") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(deepgram, { deepgram = it }, label = { Text("Deepgram API key") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
-
-            HorizontalDivider()
-            Text("Smarter detection (optional)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Text(
-                "With an Anthropic key, Claude Haiku judges lines the built-in rules can't place, and helps sort contacts.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            OutlinedTextField(anthropic, { anthropic = it }, label = { Text("Anthropic API key") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
+            OutlinedButton(onClick = onSetup) { Text("Twilio, AI and transcription setup") }
 
             HorizontalDivider()
             Text("Behavior", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)

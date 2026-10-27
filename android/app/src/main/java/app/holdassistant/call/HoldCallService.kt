@@ -32,6 +32,7 @@ import app.holdassistant.core.Fingerprint
 import app.holdassistant.core.LineState
 import app.holdassistant.core.MenuOptions
 import app.holdassistant.core.PhoneNumbers
+import app.holdassistant.core.TwilioToken
 import app.holdassistant.core.ProbeController
 import app.holdassistant.core.Segment
 import app.holdassistant.core.claudeClient
@@ -42,7 +43,6 @@ import com.twilio.voice.Call
 import com.twilio.voice.CallException
 import com.twilio.voice.ConnectOptions
 import com.twilio.voice.Voice
-import java.io.IOException
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit
@@ -59,7 +59,7 @@ class HoldCallService : Service(), Call.Listener {
 
     private var call: Call? = null
     private var audio: HoldAudioDevice? = null
-    private var stt: DeepgramStt? = null
+    private var stt: Transcriber? = null
     private var speaker: ProbeSpeaker? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var focus: AudioFocusRequest? = null
@@ -125,23 +125,19 @@ class HoldCallService : Service(), Call.Listener {
         CallRepository.update {
             CallUiState(active = true, name = name, number = number, status = CallStatus.CONNECTING, startedAt = startedAt)
         }
-        if (!settings.callingReady) {
-            finish("Finish setup in Settings first (Twilio token URL, app secret, Deepgram key).")
+        if (!settings.twilioReady) {
+            finish("Finish setup first: tap Set up calling on the home screen.")
+            return
+        }
+        if (!settings.transcriptionReady) {
+            finish("This phone has no on-device speech recognition. Add a Deepgram key in Settings.")
             return
         }
         wakeLock = getSystemService(PowerManager::class.java)
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "holdassistant:call").apply { acquire(3 * 60 * 60 * 1000L) }
 
         onWorker {
-            val token = try {
-                TokenFetcher.fetch(settings.tokenUrl, settings.appSecret)
-            } catch (e: IOException) {
-                main.post { finish("Couldn't get a call token: ${e.message}") }
-                return@onWorker
-            } catch (e: org.json.JSONException) {
-                main.post { finish("Token server sent something unexpected. Check the token URL.") }
-                return@onWorker
-            }
+            val token = TwilioToken.create(settings.accountSid, settings.apiKeySid, settings.apiKeySecret, settings.twimlAppSid)
             val line = app.lines.byNumber(number)
             val llm = settings.anthropicKey.takeIf { it.isNotEmpty() }?.let { key ->
                 ClaudeLineTier(claudeClient(key)) { msg -> Log.w(TAG, msg) }
@@ -150,25 +146,30 @@ class HoldCallService : Service(), Call.Listener {
             val probeOn = line?.probe ?: settings.probeByDefault
             probe = ProbeController(enabled = probeOn)
             CallRepository.update { it.copy(probeEnabled = probeOn) }
-            main.post { connect(token, settings.deepgramKey) }
+            main.post { connect(token, settings.deepgramKey, settings.callerId) }
         }
         worker.scheduleWithFixedDelay({ tick() }, 1, 1, TimeUnit.SECONDS)
     }
 
-    private fun connect(token: String, deepgramKey: String) {
+    private fun connect(token: String, deepgramKey: String, callerId: String) {
         if (ended) return
         speaker = ProbeSpeaker(this)
-        val stt = DeepgramStt(
-            deepgramKey,
-            onSegment = { t, text -> onWorker { onSegment(t, text) } },
-            onInterim = { text -> CallRepository.update { it.copy(interim = text) } },
-            onError = { msg -> CallRepository.update { it.copy(message = msg) } },
-        ).also { this.stt = it }
+        val onSeg = { t: Double, text: String -> onWorker { onSegment(t, text) } }
+        val onInterim = { text: String -> CallRepository.update { it.copy(interim = text) } }
+        val onError = { msg: String -> CallRepository.update { it.copy(message = msg) } }
+        // Deepgram when the user added a key (more accurate on phone audio), else free on-device recognition.
+        val stt: Transcriber = if (deepgramKey.isNotEmpty() || Build.VERSION.SDK_INT < 33) {
+            DeepgramStt(deepgramKey, onSeg, onInterim, onError)
+        } else {
+            OnDeviceStt(this, ::clockS, onSeg, onInterim, onError)
+        }
+        this.stt = stt
         val device = HoldAudioDevice { pcm -> stt.feed(pcm) }.also { audio = it }
         Voice.setAudioDevice(device)
         clockStart = System.nanoTime()
         stt.start()
-        call = Voice.connect(this, ConnectOptions.Builder(token).params(mapOf("To" to number)).build(), this)
+        val params = mapOf("To" to number, "CallerId" to callerId)
+        call = Voice.connect(this, ConnectOptions.Builder(token).params(params).build(), this)
     }
 
     /** Run on the classifier thread; dropped once the call has been torn down. */

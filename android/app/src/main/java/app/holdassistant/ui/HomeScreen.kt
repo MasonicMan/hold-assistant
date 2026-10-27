@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.holdassistant.HoldApp
 import app.holdassistant.core.PhoneNumbers
+import app.holdassistant.core.TwilioSetup
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import app.holdassistant.data.Line
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +58,15 @@ fun HomeScreen(onNavigate: (Screen) -> Unit, onCall: (number: String, name: Stri
     val lines by app.lines.lines.collectAsStateWithLifecycle()
     var dialing by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf<Line?>(null) }
+    var balance by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val st = app.settings
+        if (st.twilioReady && st.authToken.isNotEmpty()) {
+            balance = withContext(Dispatchers.IO) {
+                runCatching { TwilioSetup(st.accountSid, st.authToken).balance().toString() }.getOrNull()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -82,17 +95,25 @@ fun HomeScreen(onNavigate: (Screen) -> Unit, onCall: (number: String, name: Stri
                 item {
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-                        onClick = { onNavigate(Screen.Settings) },
+                        onClick = { onNavigate(Screen.Setup) },
                     ) {
                         Column(Modifier.padding(16.dp)) {
-                            Text("Finish setup to place calls", style = MaterialTheme.typography.titleMedium)
+                            Text("Set up calling", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                "Calls go through your Twilio account, and Deepgram transcribes them. " +
-                                    "Tap to enter your keys (see docs/SETUP.md in the repo).",
+                                "Connect your Twilio account and add an AI key. Takes a few minutes, all from here.",
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
                     }
+                }
+            }
+            balance?.let { b ->
+                item {
+                    Text(
+                        "Twilio balance: $b",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             item {

@@ -34,6 +34,7 @@ sealed interface Screen {
     data object Home : Screen
     data object Import : Screen
     data object Settings : Screen
+    data object Setup : Screen
     data object History : Screen
     data class CallDetail(val id: String) : Screen
 }
@@ -102,7 +103,8 @@ private fun App() {
     when (val s = screen) {
         Screen.Home -> HomeScreen(onNavigate = { screen = it }, onCall = placeCall)
         Screen.Import -> ImportScreen(onDone = { screen = Screen.Home })
-        Screen.Settings -> SettingsScreen(onBack = { screen = Screen.Home })
+        Screen.Settings -> SettingsScreen(onBack = { screen = Screen.Home }, onSetup = { screen = Screen.Setup })
+        Screen.Setup -> SetupScreen(onDone = { screen = Screen.Home })
         Screen.History -> HistoryScreen(onBack = { screen = Screen.Home }, onOpen = { screen = Screen.CallDetail(it) })
         is Screen.CallDetail -> CallDetailScreen(s.id, onBack = { screen = Screen.History })
     }

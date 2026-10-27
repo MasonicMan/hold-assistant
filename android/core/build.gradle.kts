@@ -13,8 +13,10 @@ kotlin {
 
 dependencies {
     api("com.anthropic:anthropic-java:3.3.0")
+    api("com.squareup.okhttp3:okhttp:4.12.0")
+    api("com.fasterxml.jackson.core:jackson-databind:2.19.4")
     testImplementation("junit:junit:4.13.2")
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.19.4")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 tasks.test {

@@ -4,12 +4,12 @@ An Android app that waits on hold for you. Call your bank through the app, then 
 
 It also imports the banks, carriers and agencies from your contacts. It tells "Chase Bank" from "Chase Miller" using the number (toll-free?), the name (known companies, words like "bank" or "insurance") and personal signals (starred, birthday, "Mom"). Claude can give a second opinion on the unclear ones.
 
-**Setup:** [docs/SETUP.md](docs/SETUP.md). **Original spec:** [docs/spec.md](docs/spec.md).
+**Setup:** in the app (tap *Set up calling*). You need a funded Twilio account and, optionally, an Anthropic key; details in [docs/SETUP.md](docs/SETUP.md). **Original spec:** [docs/spec.md](docs/spec.md).
 
 ## How it works
 
 ```
-Twilio VoIP call ──► HoldAudioDevice ──► Deepgram (live transcript)
+Twilio VoIP call ──► HoldAudioDevice ──► on-device STT or Deepgram (live transcript)
                         │                       │
                         │ 15 s ring buffer       ▼
                         │                Classifier: repeat match → phrase rules
@@ -32,7 +32,7 @@ Twilio VoIP call ──► HoldAudioDevice ──► Deepgram (live transcript)
 | `android/app` | The Android app (Compose UI, call service, audio, Deepgram, Twilio). |
 | `python/` | Classifier harness for fast experiments on transcripts. |
 | `scenarios/` | Gold-labeled transcripts shared by both test suites. Add real calls here. |
-| `twilio/functions` | The two Twilio Functions the app needs. |
+| `twilio/functions` | The call Function the app deploys to your Twilio account during setup (for reference). |
 
 ## Development
 

@@ -22,7 +22,7 @@ class DeepgramStt(
     private val onSegment: (startS: Double, text: String) -> Unit,
     private val onInterim: (text: String) -> Unit,
     private val onError: (String) -> Unit,
-) {
+) : Transcriber {
     private val client = OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).pingInterval(20, TimeUnit.SECONDS).build()
     @Volatile private var socket: WebSocket? = null
     @Volatile private var closed = false
@@ -35,7 +35,7 @@ class DeepgramStt(
     /** Deepgram times restart at 0 on reconnect; this maps them back to call time. */
     @Volatile private var timeOffsetS = 0.0
 
-    fun start() {
+    override fun start() {
         closed = false
         connect()
     }
@@ -50,7 +50,7 @@ class DeepgramStt(
     }
 
     /** Feed 16 kHz mono PCM; sent in 100 ms chunks. */
-    fun feed(pcm: ShortArray) {
+    override fun feed(pcm: ShortArray) {
         val ws = socket ?: return
         synchronized(pending) {
             for (s in pcm) {
@@ -65,7 +65,7 @@ class DeepgramStt(
         }
     }
 
-    fun stop() {
+    override fun stop() {
         closed = true
         socket?.send("{\"type\":\"CloseStream\"}")
         socket?.close(1000, "call ended")
