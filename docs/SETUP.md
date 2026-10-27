@@ -7,7 +7,7 @@ Setup happens inside the app: tap **Set up calling** on the home screen. This pa
 | | Required? | Where you pay |
 |---|---|---|
 | Twilio account with funds | Yes | twilio.com (a card, then prepaid funds) |
-| Anthropic API key | Optional, recommended | console.anthropic.com |
+| Anthropic API key | Optional, recommended | console.anthropic.com (web search for number lookups must be allowed in the Console's settings) |
 | Deepgram API key | Only if your phone can't transcribe on its own | console.deepgram.com (free starting credit) |
 
 **Why payment isn't in the app:** calls run through your own Twilio account. Twilio has no API for adding a card or upgrading an account; that's only possible on their website. Paying Twilio directly also means you pay their cost with no markup, and this app never handles card details.
@@ -27,7 +27,7 @@ Setup happens inside the app: tap **Set up calling** on the home screen. This pa
    - a TwiML App pointing at that Function.
 
    It's safe to run again.
-4. **AI key (optional).** Paste an Anthropic key. Claude Haiku then labels transcript lines the built-in rules can't place, which means fewer false alarms from hold ads. It also helps sort contacts during import.
+4. **AI key (optional).** Paste an Anthropic key. Claude Haiku then labels transcript lines the built-in rules can't place, which means fewer false alarms from hold ads. It also looks up the names of unknown numbers in your call history (a web search, about 1¢ per number, only when you tap it).
 5. **Transcription.** On Android 13 and later, with Google's on-device speech model, transcription is free and runs on the phone. A Deepgram key is optional; it's more accurate on phone audio. Phones without on-device recognition need the Deepgram key.
 
 ## Install the app

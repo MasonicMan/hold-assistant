@@ -244,7 +244,7 @@ fun SetupScreen(onDone: () -> Unit) {
             // 4. AI and transcription
             Step(4, "AI key (optional, recommended)", done = anthropic.isNotEmpty()) {
                 Text(
-                    "Claude Haiku judges lines the built-in rules can't place (fewer false alarms from hold ads) and helps sort contacts. " +
+                    "Claude Haiku judges lines the built-in rules can't place (fewer false alarms from hold ads) and names unknown numbers from your call history. " +
                         "Costs a fraction of a cent per call.",
                     style = MaterialTheme.typography.bodyMedium,
                 )

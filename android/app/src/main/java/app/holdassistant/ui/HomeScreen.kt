@@ -120,13 +120,13 @@ fun HomeScreen(onNavigate: (Screen) -> Unit, onCall: (number: String, name: Stri
                 OutlinedButton(onClick = { onNavigate(Screen.Import) }, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Default.Add, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Import banks and companies from contacts")
+                    Text("Add banks and companies from call history")
                 }
             }
             if (lines.isEmpty()) {
                 item {
                     Text(
-                        "No saved lines yet. Import them from your contacts, or dial a number.",
+                        "No saved lines yet. Add them from your call history, or dial a number.",
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(vertical = 24.dp),
                     )

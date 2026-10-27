@@ -2,7 +2,7 @@
 
 An Android app that waits on hold for you. Call your bank through the app, then go back to Spotify or a video. The app listens to the line, transcribes it live and interrupts your audio only when the call needs you: a person picks up, or a phone menu wants input. When it switches you over, it replays the last few seconds so you don't miss the greeting.
 
-It also imports the banks, carriers and agencies from your contacts. It tells "Chase Bank" from "Chase Miller" using the number (toll-free?), the name (known companies, words like "bank" or "insurance") and personal signals (starred, birthday, "Mom"). Claude can give a second opinion on the unclear ones.
+It also finds the banks, carriers and agencies in your call history. Most company numbers aren't saved as contacts, so it goes by how you used each number: toll-free numbers and long outgoing calls (time on hold) point to a company, while saved personal names like "Mom" point to a person. For numbers with no name, Claude can search the web to find whose number it is.
 
 **Setup:** in the app (tap *Set up calling*). You need a funded Twilio account and, optionally, an Anthropic key; details in [docs/SETUP.md](docs/SETUP.md). **Original spec:** [docs/spec.md](docs/spec.md).
 
@@ -28,7 +28,7 @@ Twilio VoIP call ──► HoldAudioDevice ──► on-device STT or Deepgram (
 
 | Path | What |
 |---|---|
-| `android/core` | Pure Kotlin: classifier, probe, menu parsing, contact sorting, Claude calls. Unit-tested on any JVM. |
+| `android/core` | Pure Kotlin: classifier, probe, menu parsing, call-history sorting, Twilio setup, Claude calls. Unit-tested on any JVM. |
 | `android/app` | The Android app (Compose UI, call service, audio, Deepgram, Twilio). |
 | `python/` | Classifier harness for fast experiments on transcripts. |
 | `scenarios/` | Gold-labeled transcripts shared by both test suites. Add real calls here. |

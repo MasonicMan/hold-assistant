@@ -11,6 +11,7 @@ import com.anthropic.models.messages.OutputConfig
 import com.anthropic.models.messages.StopReason
 import com.anthropic.models.messages.StructuredMessageCreateParams
 import com.anthropic.models.messages.StructuredOutputConfig
+import com.anthropic.models.messages.WebSearchTool20250305
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import java.time.Duration
 
@@ -153,5 +154,63 @@ class ClaudeContactClassifier(
         const val CONTACT_SYSTEM = """You sort phone contacts into people and organizations. An organization is any business, bank, utility, carrier, insurer, medical office, government agency, school or other institution someone might call and end up in a phone menu or on hold. A person is a friend, relative, coworker or individual professional saved under their own name (even if a company is listed as their employer).
 
 Return one result per contact id given, in any order."""
+    }
+}
+
+/**
+ * Names unknown numbers from the call log by having Claude search the web
+ * ("whose number is 1-800-..."). Sends only the numbers passed in, and only
+ * when the user asks. Web searches cost about 1¢ each.
+ */
+class ClaudeNumberLookup(
+    private val client: AnthropicClient,
+    private val model: String = CLAUDE_MODEL,
+    private val log: (String) -> Unit = {},
+) {
+    fun params(numbers: List<String>): MessageCreateParams = MessageCreateParams.builder()
+        .model(model)
+        .maxTokens(4096L)
+        .system(LOOKUP_SYSTEM)
+        .addTool(WebSearchTool20250305.builder().maxUses(numbers.size * 2L).build())
+        .addUserMessage("Numbers:\n" + numbers.joinToString("\n"))
+        .build()
+
+    /** Map of number to organization name; numbers it couldn't identify are absent. */
+    fun lookup(numbers: List<String>): Map<String, String> = numbers.distinct().chunked(8).flatMap { batch ->
+        val response = try {
+            client.messages().create(params(batch))
+        } catch (e: AnthropicServiceException) {
+            log("Claude API error ${e.statusCode()}: ${e.message}"); return@flatMap emptyList()
+        } catch (e: AnthropicIoException) {
+            log("Claude network error: ${e.message}"); return@flatMap emptyList()
+        }
+        if (response.stopReason().orElse(null) == StopReason.REFUSAL) return@flatMap emptyList()
+        val text = response.content().mapNotNull { it.text().orElse(null)?.text() }.joinToString("\n")
+        parse(text, batch).toList()
+    }.toMap()
+
+    companion object {
+        const val LOOKUP_SYSTEM = """For each phone number, use web search to find which business, agency or organization it belongs to. Only report a name the search results support; never guess.
+
+End your reply with exactly one line per number, in this format:
+<number> | <organization name>
+or
+<number> | unknown
+
+Use the organization's everyday name with the department if obvious, e.g. "Chase Bank customer service" or "Texas DMV"."""
+
+        private val LINE = Regex("""^\W*(\+?[\d\s().-]{7,20})[^|\w]*\|\s*(.+?)\s*$""")
+
+        fun parse(text: String, numbers: List<String>): Map<String, String> {
+            val wanted = numbers.associateBy { it.filter(Char::isDigit).takeLast(10) }
+            val out = mutableMapOf<String, String>()
+            for (line in text.lines()) {
+                val m = LINE.find(line.trim()) ?: continue
+                val number = wanted[m.groupValues[1].filter(Char::isDigit).takeLast(10)] ?: continue
+                val name = m.groupValues[2].trim().trim('*', '"', '`').trim()
+                if (name.isNotEmpty() && !name.equals("unknown", ignoreCase = true)) out[number] = name
+            }
+            return out
+        }
     }
 }
