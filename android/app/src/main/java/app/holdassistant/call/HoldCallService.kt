@@ -137,10 +137,10 @@ class HoldCallService : Service(), Call.Listener {
                 TokenFetcher.fetch(settings.tokenUrl, settings.appSecret)
             } catch (e: IOException) {
                 main.post { finish("Couldn't get a call token: ${e.message}") }
-                return@execute
+                return@onWorker
             } catch (e: org.json.JSONException) {
                 main.post { finish("Token server sent something unexpected. Check the token URL.") }
-                return@execute
+                return@onWorker
             }
             val line = app.lines.byNumber(number)
             val llm = settings.anthropicKey.takeIf { it.isNotEmpty() }?.let { key ->
